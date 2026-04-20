@@ -1,0 +1,48 @@
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
+
+iris = load_iris()
+X = iris.data
+y = iris.target
+
+
+plt.figure(figsize=(6,4))
+for i in range(3):
+    plt.scatter(X[y==i, 0], X[y==i, 1], label=iris.target_names[i])
+plt.xlabel("Feature 1 (sepal length)")
+plt.ylabel("Feature 2 (sepal width)")
+plt.title("Before PCA (Original Feature Space)")
+plt.legend()
+plt.show()
+
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+
+plt.figure(figsize=(6,4))
+for i in range(3):
+    plt.scatter(X_pca[y==i, 0], X_pca[y==i, 1], label=iris.target_names[i])
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.title("After PCA Transformation")
+plt.legend()
+plt.show()
+
+
+pca_full = PCA()
+pca_full.fit(X_scaled)
+plt.figure(figsize=(6,4))
+plt.plot(np.cumsum(pca_full.explained_variance_ratio_), marker='o')
+plt.xlabel("Number of Components")
+plt.ylabel("Cumulative Explained Variance")
+plt.title("Variance Explained by PCA")
+plt.grid()
+plt.show()
