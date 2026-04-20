@@ -1,0 +1,114 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, classification_report
+
+
+url = "https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.csv"
+df = pd.read_csv(url)
+print(df.head())
+
+
+df = df.dropna()
+
+
+plt.hist(df["median_house_value"], bins=30, edgecolor="black")
+plt.title("House Price Distribution")
+plt.xlabel("Price")
+plt.ylabel("Frequency")
+plt.show()
+
+
+df = df.sample(100, random_state=42)
+
+
+median_price = df["median_house_value"].median()
+df["price_class"] = (df["median_house_value"] > median_price).astype(int)
+
+
+plt.scatter(df["median_income"], df["price_class"])
+plt.xlabel("Median Income")
+plt.ylabel("Price Class (0 = Low, 1 = High)")
+plt.title("Housing Data Before Logistic Regression")
+plt.show()
+
+
+X = df[["median_income"]]
+y = df["price_class"]
+
+
+plt.boxplot(df["median_income"])
+plt.title("Median Income Spread")
+plt.show()
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+
+y_pred_train = model.predict(X_train)
+y_pred_test = model.predict(X_test)
+
+
+train_acc = accuracy_score(y_train, y_pred_train)
+print("Training Accuracy:", train_acc)
+
+
+test_acc = accuracy_score(y_test, y_pred_test)
+print("Testing Accuracy:", test_acc)
+
+
+if train_acc > test_acc + 0.1:
+    print("Model is Overfitting")
+elif test_acc > train_acc:
+    print("Model may be Underfitting")
+else:
+    print("Model is Well Fitted")
+
+
+cm = confusion_matrix(y_test, y_pred_test)
+print("Confusion Matrix:\n", cm)
+
+
+import seaborn as sns
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
+plt.title("Confusion Matrix Heatmap")
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
+
+
+accuracy = accuracy_score(y_test, y_pred_test)
+precision = precision_score(y_test, y_pred_test)
+recall = recall_score(y_test, y_pred_test)
+f1 = f1_score(y_test, y_pred_test)
+print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1 Score:", f1)
+
+
+print(classification_report(y_test, y_pred_test))
+
+
+# predicted probabilities
+y_prob = model.predict_proba(X)[:,1]
+# sort values for smooth curve
+sorted_index = X["median_income"].argsort()
+X_sorted = X["median_income"].iloc[sorted_index]
+y_prob_sorted = y_prob[sorted_index]
+# plot data points
+plt.scatter(X["median_income"], y)
+# plot S curve
+plt.plot(X_sorted, y_prob_sorted, color="red")
+plt.xlabel("Median Income")
+plt.ylabel("Probability of High Price")
+plt.title("Logistic Regression S Curve")
+plt.show()
