@@ -1,0 +1,160 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+
+url = "https://raw.githubusercontent.com/ageron/handson-ml/master/datasets/housing/housing.csv"
+df = pd.read_csv(url)
+print(df.head())
+
+
+print("First 5 rows:")
+print(df.head())
+print("\nDataset Shape:", df.shape)
+print("\nDataset Info:")
+print(df.info())
+print("\nStatistical Summary:")
+print(df.describe())
+
+
+sample_df = df.sample(n=100, random_state=42)
+
+
+plt.hist(sample_df["median_house_value"], bins=30, edgecolor="black")
+plt.title("House Price Distribution")
+plt.xlabel("Price")
+plt.ylabel("Frequency")
+plt.show()
+
+
+plt.boxplot(sample_df["median_house_value"])
+plt.title("Box Plot of House Prices")
+plt.ylabel("Price")
+plt.show()
+
+
+import seaborn as sns
+sns.heatmap(sample_df.corr(numeric_only=True), cmap="coolwarm")
+plt.title("Correlation Heatmap")
+plt.show()
+
+
+print("Missing values in dataset:\n")
+print(sample_df.isnull().sum())
+
+
+sample_df["total_bedrooms"].fillna(sample_df["total_bedrooms"].mean(), inplace=True)
+
+
+X = sample_df[["median_income"]]
+y = sample_df["median_house_value"]
+
+
+# scatter plot (before model)
+plt.scatter(X, y, label="Actual Data")
+# simple line using numpy (not model yet)
+z = np.polyfit(X["median_income"], y, 1)
+p = np.poly1d(z)
+# sort for clean line
+X_sorted = np.sort(X["median_income"])
+plt.plot(X_sorted, p(X_sorted), color="red", label="Trend Line")
+plt.xlabel("Median Income")
+plt.ylabel("Median House Value")
+plt.title("Before Applying Model")
+plt.legend()
+plt.show()
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+
+y_pred = model.predict(X_test)
+
+
+train_score = model.score(X_train, y_train)
+test_score = model.score(X_test, y_test)
+print("Training Accuracy:", train_score)
+print("Testing Accuracy:", test_score)
+
+
+if train_score > test_score + 0.1:
+    print("Model may be OVERFITTING")
+elif test_score > train_score:
+    print("Model may be UNDERFITTING")
+else:
+    print("Model seems to be WELL FIT")
+
+
+mse = mean_squared_error(y_test, y_pred)
+print("MSE:", mse)
+
+
+rmse = np.sqrt(mse)
+print("RMSE:", rmse)
+
+
+r2 = r2_score(y_test, y_pred)
+print("R2 Score:", r2)
+
+
+# take same 100 sample (if not already taken)
+sample_df = df.sample(n=100, random_state=42)
+X = sample_df[["median_income"]]
+y = sample_df["median_house_value"]
+# split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+# train model
+from sklearn.linear_model import LinearRegression
+model = LinearRegression()
+model.fit(X_train, y_train)
+# predictions
+y_pred = model.predict(X_test)
+# plot final graph
+plt.figure(figsize=(8,5))
+# actual points
+plt.scatter(X_test, y_test, label="Actual Data")
+# sort for straight line
+sorted_indices = X_test["median_income"].argsort()
+X_sorted = X_test.iloc[sorted_indices]
+y_sorted = y_pred[sorted_indices]
+# regression line
+plt.plot(X_sorted, y_sorted, color="red", linewidth=2, label="Regression Line")
+plt.xlabel("Median Income")
+plt.ylabel("Median House Value")
+plt.title("Linear Regression Model Output")
+plt.legend()
+plt.show()
+
+
+# predictions on full dataset
+y_all_pred = model.predict(X)
+plt.figure(figsize=(8,5))
+# Actual data
+plt.scatter(X, y, s=20, alpha=0.6, label="Actual Data")
+# BEFORE MODEL (trend line using numpy)
+z = np.polyfit(X["median_income"], y, 1)
+p = np.poly1d(z)
+X_sorted = np.sort(X["median_income"])
+plt.plot(X_sorted, p(X_sorted), linestyle="dashed", label="Before Model (Trend Line)")
+# AFTER MODEL (trained regression line)
+sorted_indices = X["median_income"].argsort()
+X_sorted2 = X.iloc[sorted_indices]
+y_sorted2 = y_all_pred[sorted_indices]
+plt.plot(X_sorted2, y_sorted2, color="red", linewidth=2, label="After Model (Regression Line)")
+plt.xlabel("Median Income")
+plt.ylabel("Median House Value")
+plt.title("Before vs After Linear Regression")
+plt.legend()
+plt.show()
