@@ -1,0 +1,58 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+# Bipolar inputs
+X = np.array([
+    [-1, -1],
+    [-1,  1],
+    [ 1, -1],
+    [ 1,  1]
+])
+# Target output (AND logic)
+y = np.array([-1, -1, -1, 1])
+
+
+# Initialize weights and bias
+w = np.zeros(X.shape[1])
+b = 0
+print("Initial Weights:", w)
+print("Initial Bias:", b)
+
+
+# Hebbian Learning
+for i in range(len(X)):
+    w = w + X[i] * y[i]
+    b = b + y[i]
+print("Final Weights:", w)
+print("Final Bias:", b)
+
+
+# Prediction
+y_pred = []
+for i in range(len(X)):
+    net = np.dot(X[i], w) + b
+    output = 1 if net >= 0 else -1
+    y_pred.append(output)
+print("Predicted Output:", y_pred)
+print("Actual Output:   ", list(map(int, y)))
+
+
+plt.figure(figsize=(6,6))
+plt.scatter(X[y==-1][:,0], X[y==-1][:,1], color='blue', s=100, label='Class -1')
+plt.scatter(X[y==1][:,0], X[y==1][:,1], color='green', s=100, label='Class 1')
+x_vals = np.linspace(-2, 2, 100)
+if w[1] != 0:
+    y_vals = -(w[0]*x_vals + b)/w[1]
+    plt.plot(x_vals, y_vals, color='red', linewidth=3, label='Decision Boundary')
+plt.axhline(0)
+plt.axvline(0)
+plt.grid(True)
+plt.title("Hebbian Learning Decision Boundary")
+plt.xlabel("Input 1")
+plt.ylabel("Input 2")
+plt.legend()
+plt.show()
+
+
+#(NOTE: If OR gate is to be implemented just change the line y = np.array([-1, -1, -1, 1]) to y = np.array([-1, 1, 1, 1]))
